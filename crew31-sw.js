@@ -1,51 +1,42 @@
-// crew31-sw.js - 푸시 알림 + 캐시 자동 업데이트
-const CACHE_VERSION = 'crew31-v3'; // 배포할 때마다 자동 갱신됨
+const CACHE_VERSION = 'crew31-v2';
 
-// 설치 시 이전 캐시 삭제
 self.addEventListener('install', event => {
-  self.skipWaiting(); // 즉시 활성화
+  self.skipWaiting();
 });
 
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.map(key => {
-        if(key !== CACHE_VERSION) return caches.delete(key);
-      }))
-    ).then(() => self.clients.claim()) // 모든 탭 즉시 제어
+      Promise.all(keys.map(key => caches.delete(key)))
+    ).then(() => self.clients.claim())
   );
 });
 
-// 네트워크 우선 전략 (항상 최신 파일 사용)
+// HTML? ?덈? 罹먯떆 ????- ??긽 ?ㅽ듃?뚰겕?먯꽌
 self.addEventListener('fetch', event => {
-  // HTML 파일은 항상 네트워크에서
-  if(event.request.mode === 'navigate' || event.request.url.endsWith('.html')){
+  const url = new URL(event.request.url);
+  
+  // HTML ?뚯씪? ??긽 ?ㅽ듃?뚰겕 ?곗꽑, 罹먯떆 ???????  if(event.request.mode === 'navigate' || 
+     url.pathname.endsWith('.html') ||
+     event.request.headers.get('accept')?.includes('text/html')){
     event.respondWith(
-      fetch(event.request).catch(() => caches.match(event.request))
+      fetch(event.request, {cache: 'no-store'}).catch(() => {
+        return new Response('?ㅽ봽?쇱씤 ?곹깭?낅땲?? ?명꽣???곌껐???뺤씤?댁＜?몄슂.', {
+          headers: {'Content-Type': 'text/html; charset=utf-8'}
+        });
+      })
     );
     return;
   }
-  // 나머지는 캐시 우선
-  event.respondWith(
-    caches.match(event.request).then(cached => {
-      if(cached) return cached;
-      return fetch(event.request).then(response => {
-        if(response.ok){
-          const clone = response.clone();
-          caches.open(CACHE_VERSION).then(cache => cache.put(event.request, clone));
-        }
-        return response;
-      });
-    })
-  );
+  // ?섎㉧吏 由ъ냼?ㅻ룄 罹먯떆 ????  event.respondWith(fetch(event.request, {cache: 'no-store'}));
 });
 
-// 푸시 알림
+// ?몄떆 ?뚮┝
 self.addEventListener('push', event => {
   const data = event.data ? event.data.json() : {};
   const { title, body, icon, data: extra } = data.notification || data;
   event.waitUntil(
-    self.registration.showNotification(title || '📢 crew31', {
+    self.registration.showNotification(title || '?뱼 crew31', {
       body: body || '',
       icon: icon || '/favicon.ico',
       badge: '/favicon.ico',
