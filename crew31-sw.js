@@ -3,7 +3,7 @@
 //      + 푸시 알림 기능 유지.
 // 이 파일이 바뀌면 브라우저가 새 버전을 감지해 자동으로 갱신합니다.
 
-const SW_VERSION = 'crew31-2026-05-29';
+const SW_VERSION = 'crew31-2026-06-01b';
 
 // 설치 즉시 활성화 대기 없이 적용
 self.addEventListener('install', (event) => {
